@@ -4,11 +4,12 @@ import sublime_plugin
 '''
 Unicode Altercross
 A plugin that works similar to Alt+X hotkey in MS Word.
-
 Add the following JSON dicts to [Preferences > Key Bindings]
     { "keys": ["alt+z"], "command": "unicode_to_char" },
     { "keys": ["alt+x"], "command": "char_to_unicode" }
 '''
+
+MAX_BUFFER_LEN = 1024
 
 def tryResolveUnicode(hex_str):
     try:
@@ -48,6 +49,8 @@ class CharToUnicodeCommand(sublime_plugin.TextCommand):
             if not is_unicode:
                 start_offset = max(0, stop_offset - 1)
 
+        if stop_offset - start_offset > MAX_BUFFER_LEN:
+            return
 
         selection_offset = sublime.Region(start_offset, stop_offset)
         selection_contents = self.view.substr(selection_offset)
@@ -71,6 +74,8 @@ class UnicodeToCharCommand(sublime_plugin.TextCommand):
                 if is_legal:
                     start_offset = candidate_start_offset
                     break
+        if stop_offset - start_offset > MAX_BUFFER_LEN:
+            return
 
         selection_offset = sublime.Region(start_offset, stop_offset)
         selection_contents = self.view.substr(selection_offset)
